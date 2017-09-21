@@ -2,6 +2,7 @@
 
 #include "MemoryPawn.h"
 #include "Camera/CameraComponent.h"
+#include "Card.h"
 
 
 // Sets default values
@@ -36,6 +37,29 @@ void AMemoryPawn::Tick(float DeltaTime)
 void AMemoryPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+}
+
+void AMemoryPawn::AddCard(ACard * Card)
+{
+	if (FirstCard == nullptr) {
+		FirstCard = Card;
+	} else if (SecondCard == nullptr) {
+		SecondCard = Card;
+	}
+
+}
+
+void AMemoryPawn::CheckCards()
+{
+	if (FirstCard != nullptr && SecondCard != nullptr) {
+		if (FirstCard->GetIndex() == SecondCard->GetIndex()) {
+			FirstCard->Destroy();
+			SecondCard->Destroy();
+		}
+		FirstCard = nullptr;
+		SecondCard = nullptr;
+	}
 
 }
 

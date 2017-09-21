@@ -23,6 +23,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	int GetIndex();
+
 private:
 	
 	UPROPERTY(EditAnywhere)
@@ -36,6 +38,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		int Index;
+
+	UPROPERTY(EditAnywhere)
+		bool bTurned;
 
 public:
 

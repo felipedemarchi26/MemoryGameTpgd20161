@@ -26,9 +26,19 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void AddCard(class ACard* Card);
+
+	void CheckCards();
+
 private:
 
 	UPROPERTY(EditAnywhere)
 		class UCameraComponent* Camera;
+
+	UPROPERTY(EditAnywhere)
+		class ACard* FirstCard;
+
+	UPROPERTY(EditAnywhere)
+		class ACard* SecondCard;
 	
 };

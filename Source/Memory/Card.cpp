@@ -3,6 +3,9 @@
 #include "Card.h"
 #include "PaperSprite.h"
 #include "PaperSpriteComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"
+#include "MemoryPawn.h"
 
 
 // Sets default values
@@ -24,6 +27,7 @@ void ACard::BeginPlay()
 	if (ClosedCard != NULL) {
 		Sprite->SetSprite(ClosedCard);
 	}
+	bTurned = false;
 	
 }
 
@@ -34,8 +38,38 @@ void ACard::Tick(float DeltaTime)
 
 }
 
+int ACard::GetIndex()
+{
+	return Index;
+}
+
 void ACard::OnTouchBegin(ETouchIndex::Type Type, UPrimitiveComponent * TouchedComponent)
 {
 	UE_LOG(LogTemp, Warning, TEXT("TOUCH!"));
+	if (bTurned) {
+		Sprite->SetSprite(ClosedCard);
+	} else {
+		Sprite->SetSprite(OpenedCard);
+		UWorld* World = GetWorld();
+		if (World) {
+			//APlayerController* Controller = UGameplayStatics::GetPlayerController(World, 0);
+			APlayerController* Controller = World->GetFirstPlayerController();
+			if (Controller) {
+				//APawn* Pawn = UGameplayStatics::GetPlayerPawn(World, 0);
+				APawn* Pawn = Controller->GetControlledPawn();
+				if (Pawn) {
+					AMemoryPawn* MPawn = Cast<AMemoryPawn>(Pawn);
+					if (MPawn) {
+						MPawn->AddCard(this);
+						MPawn->CheckCards();
+					}
+				}
+			}
+
+		}
+	}
+	bTurned = !bTurned;
+
+
 }
 
