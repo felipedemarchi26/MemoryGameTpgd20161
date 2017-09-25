@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Card.generated.h"
+#include "MemoryGrid.generated.h"
 
 UCLASS()
-class MEMORY_API ACard : public AActor
+class MEMORY_API AMemoryGrid : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ACard();
+	AMemoryGrid();
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,30 +23,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	int GetIndex();
-
-	void TurnDown();
-
 private:
+
+	UPROPERTY(EditAnywhere)
+		class USceneComponent* Root;
+
+	TSubclassOf<class ACard> AbacaxiCard;
+	TSubclassOf<class ACard> BananaCard;
+	TSubclassOf<class ACard> MacaCard;
+	TSubclassOf<class ACard> PeraCard;
 	
-	UPROPERTY(EditAnywhere)
-		class UPaperSpriteComponent* Sprite;
-
-	UPROPERTY(EditAnywhere)
-		class UPaperSprite* OpenedCard;
-
-	UPROPERTY(EditAnywhere)
-		class UPaperSprite* ClosedCard;
-
-	UPROPERTY(EditAnywhere)
-		int Index;
-
-	UPROPERTY(EditAnywhere)
-		bool bTurned;
-
-public:
-
-	UFUNCTION()
-		void OnTouchBegin(ETouchIndex::Type Type, UPrimitiveComponent* TouchedComponent);
 	
 };

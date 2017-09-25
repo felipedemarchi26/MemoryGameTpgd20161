@@ -73,3 +73,8 @@ void ACard::OnTouchBegin(ETouchIndex::Type Type, UPrimitiveComponent * TouchedCo
 
 }
 
+void ACard::TurnDown() {
+	Sprite->SetSprite(ClosedCard);
+	bTurned = false;
+}
+

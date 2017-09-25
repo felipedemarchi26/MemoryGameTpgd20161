@@ -43,6 +43,6 @@ private:
 
 	FTimerHandle TurnDown;
 
-	void TurnCardsDown();
+	void TurnCardsDown;
 	
 };

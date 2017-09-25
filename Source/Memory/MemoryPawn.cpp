@@ -3,6 +3,7 @@
 #include "MemoryPawn.h"
 #include "Camera/CameraComponent.h"
 #include "Card.h"
+#include "Runtime/Engine/Public/TimerManager.h"
 
 
 // Sets default values
@@ -56,10 +57,23 @@ void AMemoryPawn::CheckCards()
 		if (FirstCard->GetIndex() == SecondCard->GetIndex()) {
 			FirstCard->Destroy();
 			SecondCard->Destroy();
+			FirstCard = nullptr;
+			SecondCard = nullptr;
+		} else {
+			GetWorldTimerManager().SetTimer(TurnDown, this, 
+				&AMemoryPawn::TurnCardsDown, 2.0f, false);
 		}
-		FirstCard = nullptr;
-		SecondCard = nullptr;
+		
 	}
 
+}
+
+void AMemoryPawn::TurnCardsDown()
+{
+	FirstCard->TurnDown();
+	SecondCard->TurnDown();
+	FirstCard = nullptr;
+	SecondCard = nullptr;
+	GetWorldTimerManager().ClearTimer(TurnDown);
 }
 
