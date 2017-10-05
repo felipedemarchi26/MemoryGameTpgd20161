@@ -44,9 +44,14 @@ private:
 	UPROPERTY(EditAnywhere)
 		bool bTurned;
 
+	class AMemoryGrid* Grid;
+
 public:
 
 	UFUNCTION()
 		void OnTouchBegin(ETouchIndex::Type Type, UPrimitiveComponent* TouchedComponent);
 	
+	void SetGrid(class AMemoryGrid* NewGrid);
+	class AMemoryGrid* GetGrid();
+
 };

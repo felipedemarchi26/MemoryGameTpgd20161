@@ -23,6 +23,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void AddCard(class ACard* Card);
+
+	void CheckCards();
+
+	bool isCanClick();
+
 private:
 
 	UPROPERTY(EditAnywhere)
@@ -32,6 +38,20 @@ private:
 	TSubclassOf<class ACard> BananaCard;
 	TSubclassOf<class ACard> MacaCard;
 	TSubclassOf<class ACard> PeraCard;
+
+	UPROPERTY(EditAnywhere)
+		class ACard* FirstCard;
+
+	UPROPERTY(EditAnywhere)
+		class ACard* SecondCard;
+
+	FTimerHandle TurnDown;
+
+	bool bCanClick;
+
+	void TurnCardsDown();
+
+
 	
 	
 };

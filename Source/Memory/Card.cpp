@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "MemoryPawn.h"
+#include "MemoryGrid.h"
 
 
 // Sets default values
@@ -46,31 +47,29 @@ int ACard::GetIndex()
 void ACard::OnTouchBegin(ETouchIndex::Type Type, UPrimitiveComponent * TouchedComponent)
 {
 	UE_LOG(LogTemp, Warning, TEXT("TOUCH!"));
-	if (bTurned) {
-		Sprite->SetSprite(ClosedCard);
-	} else {
-		Sprite->SetSprite(OpenedCard);
-		UWorld* World = GetWorld();
-		if (World) {
-			//APlayerController* Controller = UGameplayStatics::GetPlayerController(World, 0);
-			APlayerController* Controller = World->GetFirstPlayerController();
-			if (Controller) {
-				//APawn* Pawn = UGameplayStatics::GetPlayerPawn(World, 0);
-				APawn* Pawn = Controller->GetControlledPawn();
-				if (Pawn) {
-					AMemoryPawn* MPawn = Cast<AMemoryPawn>(Pawn);
-					if (MPawn) {
-						MPawn->AddCard(this);
-						MPawn->CheckCards();
-					}
-				}
-			}
-
+	if (Grid->isCanClick()) {
+		if (bTurned) {
+			Sprite->SetSprite(ClosedCard);
 		}
+		else {
+			Sprite->SetSprite(OpenedCard);
+			Grid->AddCard(this);
+			Grid->CheckCards();
+		}
+		bTurned = !bTurned;
 	}
-	bTurned = !bTurned;
 
 
+}
+
+void ACard::SetGrid(AMemoryGrid * NewGrid)
+{
+	Grid = NewGrid;
+}
+
+AMemoryGrid * ACard::GetGrid()
+{
+	return Grid;
 }
 
 void ACard::TurnDown() {
