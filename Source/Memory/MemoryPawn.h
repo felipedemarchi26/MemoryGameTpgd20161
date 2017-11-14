@@ -30,5 +30,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		class UCameraComponent* Camera;
+
+	void LoadGame();
 			
 };

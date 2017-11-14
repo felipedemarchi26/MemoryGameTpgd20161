@@ -3,7 +3,10 @@
 #include "MemoryPawn.h"
 #include "Camera/CameraComponent.h"
 #include "Card.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "MemorySaveGame.h"
+#include "MemoryGameInstance.h"
+#include "Engine/World.h"
 
 
 // Sets default values
@@ -38,5 +41,33 @@ void AMemoryPawn::Tick(float DeltaTime)
 void AMemoryPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAction("Load", IE_Pressed, this, &AMemoryPawn::LoadGame);
+}
+
+void AMemoryPawn::LoadGame() {
+	//https://docs.unrealengine.com/latest/INT/Gameplay/SaveGame/Code/
+	//Obtém uma instância do SaveGame
+	UMemorySaveGame* LoadGameInstance =
+		Cast<UMemorySaveGame>(
+			UGameplayStatics::CreateSaveGameObject(UMemorySaveGame::StaticClass()));
+	
+	//Carrega o jogo salvo pelo SlotName e UserIndex
+	LoadGameInstance = Cast<UMemorySaveGame>(
+		UGameplayStatics::LoadGameFromSlot(
+			LoadGameInstance->SaveSlotName, 
+			LoadGameInstance->UserIndex));
+
+	UWorld* World = GetWorld();
+	if (World) {
+		UGameInstance* Instance = UGameplayStatics::GetGameInstance(World);
+		if (Instance) {
+			UMemoryGameInstance* MemoryInstance = Cast<UMemoryGameInstance>(Instance);
+			if (MemoryInstance) {
+				MemoryInstance->SetErros(LoadGameInstance->Erros);
+				MemoryInstance->SetPontuacao(LoadGameInstance->Pontos);
+			}
+		}
+	}
 
 }

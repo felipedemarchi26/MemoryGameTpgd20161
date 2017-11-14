@@ -29,7 +29,14 @@ public:
 
 	bool isCanClick();
 
+	TArray<FString> ReadFile();
+
 private:
+	
+	int32 NumPares;
+	int32 NumAcertos;
+
+	TSubclassOf<class UUserWidget> HUD;
 
 	UPROPERTY(EditAnywhere)
 		class USceneComponent* Root;
@@ -50,6 +57,8 @@ private:
 	bool bCanClick;
 
 	void TurnCardsDown();
+
+	void SaveGame(int32 Erros, int32 Pontos);
 
 
 	

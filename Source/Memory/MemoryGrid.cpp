@@ -6,7 +6,17 @@
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
 #include "Runtime/Engine/Public/TimerManager.h"
-
+#include "FileHelper.h"
+#include "Kismet/GameplayStatics.h"
+#include "MemoryGameInstance.h"
+#include "Blueprint/UserWidget.h"
+#include "Runtime/UMG/Public/UMG.h"
+#include "Runtime/UMG/Public/UMGStyle.h"
+#include "Runtime/UMG/Public/Slate/SObjectWidget.h"
+#include "Runtime/UMG/Public/IUMGModule.h"
+#include "Runtime/UMG/Public/Blueprint/UserWidget.h"
+#include "Runtime/UMG/Public/Blueprint/WidgetBlueprintLibrary.h"
+#include "MemorySaveGame.h"
 
 // Sets default values
 AMemoryGrid::AMemoryGrid()
@@ -41,12 +51,19 @@ AMemoryGrid::AMemoryGrid()
 	if (PeraBP.Succeeded()) {
 		PeraCard = Cast<UClass>(PeraBP.Object);
 	}
+
+	ConstructorHelpers::FClassFinder<UUserWidget> HUDLoad(TEXT("WidgetBlueprint'/Game/Blueprints/HUD.HUD_C'"));
+	if (HUDLoad.Succeeded()) {
+		HUD = HUDLoad.Class;
+	}
 }
 
 // Called when the game starts or when spawned
 void AMemoryGrid::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ReadFile();
 	
 	bCanClick = true;
 
@@ -57,6 +74,8 @@ void AMemoryGrid::BeginPlay()
 	int BananaCount = 0;
 	int MacaCount = 0;
 	int PeraCount = 0;
+
+	NumPares = 4;
 
 	if (AbacaxiCard && MacaCard && BananaCard && PeraCard) {
 		FActorSpawnParameters SpawnParameters;
@@ -117,6 +136,14 @@ void AMemoryGrid::BeginPlay()
 
 			}
 
+			//Cria o WidgetBlueprint
+			APlayerController* Controller = UGameplayStatics::GetPlayerController(World, 0);
+			if (Controller) {
+				UUserWidget* UserWidget = UWidgetBlueprintLibrary::Create(World, HUD, Controller);
+				if (UserWidget) {
+					UserWidget->AddToViewport();
+				}
+			}
 			
 		}
 		
@@ -144,18 +171,38 @@ void AMemoryGrid::AddCard(ACard * Card)
 void AMemoryGrid::CheckCards()
 {
 	if (FirstCard != nullptr && SecondCard != nullptr) {
-		if (FirstCard->GetIndex() == SecondCard->GetIndex()) {
-			FirstCard->Destroy();
-			SecondCard->Destroy();
-			FirstCard = nullptr;
-			SecondCard = nullptr;
-		}
-		else {
-			bCanClick = false;
-			GetWorldTimerManager().SetTimer(TurnDown, this,
-				&AMemoryGrid::TurnCardsDown, 2.0f, false);
-		}
 
+		UWorld* World = GetWorld();
+		if (World) {
+			UGameInstance* Instance = UGameplayStatics::GetGameInstance(World);
+			if (Instance) {
+				UMemoryGameInstance* MemoryInstance = Cast<UMemoryGameInstance>(Instance);
+				if (MemoryInstance) {
+					if (FirstCard->GetIndex() == SecondCard->GetIndex()) {
+						FirstCard->Destroy();
+						SecondCard->Destroy();
+						FirstCard = nullptr;
+						SecondCard = nullptr;
+						MemoryInstance->SetPontuacao(MemoryInstance->GetPontuacao() + 5);
+						NumAcertos++;
+						if (NumAcertos == NumPares) {
+							//Salvar o jogo
+							SaveGame(MemoryInstance->GetErros(), MemoryInstance->GetPontuacao());
+							//Mudança de Fase
+							UGameplayStatics::OpenLevel(World, "MemoryGameDynamic1");
+						}
+					} else {
+						bCanClick = false;
+						GetWorldTimerManager().SetTimer(TurnDown, this,
+							&AMemoryGrid::TurnCardsDown, 2.0f, false);
+						MemoryInstance->SetErros(MemoryInstance->GetErros() + 1);
+						if (MemoryInstance->GetErros() == 3) {
+							UE_LOG(LogTemp, Warning, TEXT("GAME OVER!"));
+						}
+					}
+				}
+			}
+		}
 	}
 
 }
@@ -163,6 +210,22 @@ void AMemoryGrid::CheckCards()
 bool AMemoryGrid::isCanClick()
 {
 	return bCanClick;
+}
+
+TArray<FString> AMemoryGrid::ReadFile()
+{
+	FString SaveDirectory = FString("C:/Users/Aluno/Documents/leituraarquivo.txt");
+	FString TextToRead;
+
+	FFileHelper::LoadFileToString(TextToRead, *SaveDirectory);
+	TArray<FString> Lines;
+	int32 lineCount = TextToRead.ParseIntoArray(Lines, _T("\n"), true);
+
+	for (int i = 0; i < Lines.Num(); i++) {
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *Lines[i]);
+	}
+
+	return Lines;
 }
 
 void AMemoryGrid::TurnCardsDown()
@@ -173,4 +236,24 @@ void AMemoryGrid::TurnCardsDown()
 	SecondCard = nullptr;
 	GetWorldTimerManager().ClearTimer(TurnDown);
 	bCanClick = true;
+}
+
+void AMemoryGrid::SaveGame(int32 Erros, int32 Pontos)
+{
+	//https://docs.unrealengine.com/latest/INT/Gameplay/SaveGame/Code/
+	//Cria uma instância para o SaveGame
+	UMemorySaveGame* SaveGameInstance =
+		Cast<UMemorySaveGame>(
+			UGameplayStatics::CreateSaveGameObject(UMemorySaveGame::StaticClass()));
+	
+	//Seta os valores a serem salvos
+	SaveGameInstance->Erros = Erros;
+	SaveGameInstance->Pontos = Pontos;
+
+	//Salva o jogo em um arquivo
+	UGameplayStatics::SaveGameToSlot(SaveGameInstance,
+		SaveGameInstance->SaveSlotName,
+		SaveGameInstance->UserIndex);
+
+
 }
